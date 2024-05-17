@@ -1,4 +1,4 @@
-Procceed to add code for ontime login page
+Code for ontime login page
 
 Register Button:
 Navigate(LoginScreen, ScreenTransition.Fade)
