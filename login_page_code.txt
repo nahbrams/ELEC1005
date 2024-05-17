@@ -1,0 +1,44 @@
+Register Button:
+Navigate(LoginScreen, ScreenTransition.Fade)
+
+Login Button:
+If(
+    !IsBlank(
+        LookUp(
+            admin_list,
+            user_name = username_input.Text && passwords = password_input.Text
+        )
+    ),
+    Navigate('admin-page');
+    Notify(
+        "Login Success",
+        NotificationType.Success
+    ),
+    Set(
+        gblUsername,
+        username_input.Text
+    ),
+    If(
+        !IsBlank(
+            LookUp(
+                'user-list',
+                Username = username_input.Text && Password = password_input.Text
+            )
+        ),
+        UpdateContext({loginStatus: "success"});
+        Navigate('user-page');
+        Notify(
+            "Login Success",
+            NotificationType.Success
+        ),
+        Notify(
+            "Login Fail",
+            NotificationType.Error
+        )
+    )
+)
+ 
+ 
+Register Button:
+Navigate(register, ScreenTransition.Fade)
+ 
