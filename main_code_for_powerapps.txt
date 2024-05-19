@@ -1,0 +1,219 @@
+Home
+
+Enter Button:
+Navigate(Login)
+ 
+Login
+Login Button:
+If(
+    !IsBlank(
+        LookUp(
+            AdminList,
+            Username = username_input.Text && Password = password_input.Text
+        )
+    ),
+    Set(gblUsername, username_input.Text);
+    Navigate(AdminPage);
+    Notify("Login Success", NotificationType.Success),
+    If(
+        !IsBlank(
+            LookUp(
+                UserList,
+                Username = username_input.Text && Password = password_input.Text
+            )
+        ),
+       Set(gblUsername, username_input.Text);
+        Set(gblEmployeeNumber, LookUp(UserList, Username = username_input.Text).EmployeeNumber);
+        Navigate(UserPage);
+        Notify("Login Success", NotificationType.Success),
+        Notify("Login Fail", NotificationType.Error)
+    )
+)
+ 
+Forgot Password Button:
+Navigate(ForgotPasswordScreen)
+
+Register Button:
+Navigate(RegisterScreen)
+
+Register Screen
+Register Button:
+If(
+    IsBlank(txtName.Text) || IsBlank(txtUsername.Text) || IsBlank(txtPassword.Text) || IsBlank(txtEmail.Text) || IsBlank(txtEmployeeNumber.Text),
+    Notify("All fields are required.", NotificationType.Error),
+    If(
+        !IsBlank(LookUp(UserList, Username = txtUsername.Text)),
+        Notify("Username already exists.", NotificationType.Error),
+        If(
+            Len(txtPassword.Text) < 8,
+            Notify("Password too weak. Must be at least 8 characters long.", NotificationType.Error),
+            Patch(
+                UserList,
+                Defaults(UserList),
+                {
+                    Title: txtName.Text,
+                    Username: txtUsername.Text,
+                    Password: txtPassword.Text,
+                    Email: txtEmail.Text,
+                    EmployeeNumber: txtEmployeeNumber.Text
+                }
+            );
+            Notify("Registration successful!", NotificationType.Success);
+            Reset(txtName);
+            Reset(txtUsername);
+            Reset(txtPassword);
+            Reset(txtEmail);
+            Reset(txtEmployeeNumber);
+            Navigate(Login)
+        )
+    )
+)
+ 
+
+Back Register Button
+Back()
+ 
+ 
+Forgot Password Screen
+reset_pwd_button
+If(
+    IsBlank(txtEmail2.Text) || IsBlank(txtNewPassword2.Text) || IsBlank(txtConfirmPassword2.Text),
+    Notify("All fields are required.", NotificationType.Error),
+    If(
+        IsBlank(LookUp(UserList, Email = txtEmail2.Text)),
+        Notify("Email not found.", NotificationType.Error),
+        If(
+            Len(txtNewPassword2.Text) < 8,
+            Notify("Password too weak. Must be at least 8 characters long.", NotificationType.Error),
+            If(
+                txtNewPassword2.Text <> txtConfirmPassword2.Text,
+                Notify("Passwords do not match.", NotificationType.Error),
+                Patch(
+                    UserList,
+                    LookUp(UserList, Email = txtEmail2.Text),
+                    {
+                        Password: txtNewPassword2.Text
+                    }
+                );
+                Notify("Password reset successful!", NotificationType.Success);
+                Reset(txtEmail2);
+                Reset(txtNewPassword2);
+                Reset(txtConfirmPassword2);
+                Navigate(Login)
+            )
+        )
+    )
+)
+ 
+
+Back Button:
+Back()
+
+Admin Page
+
+Logout Button:
+Navigate(Login)
+
+Welcome Label:
+"Welcome, " & LookUp(AdminList, Username = gblUsername).Title & "."
+ 
+
+Personal Details Button:
+Navigate(AdminPersonalDetails)
+
+
+Employee List Button:
+Navigate(EmployeesList)
+
+Schedule Button:
+Navigate(AdminScheduling)
+
+
+User Page:
+ 
+Welcome Label:
+"Welcome, " & LookUp(UserList, Username = gblUsername).Title & "."
+ 
+
+Logout Button:
+Navigate(Login)
+
+Personal Details Button:
+Navigate(UserPersonalDetails)
+
+Schedule Button:
+Navigate(UserScheduleScreen)
+
+
+Employee List Screen
+Back Button
+Back()
+ 
+Employee List Gallery
+Navigate(EmployeeDetails, ScreenTransition.None, {selectedEmployee: ThisItem})
+ 
+ 
+Employee Details
+Save button:
+Patch(
+    UserList,
+    LookUp(UserList, ID = selectedEmployee.ID),
+    {
+        Rating: RatingEmployee.Value,
+        Review: TextInputReview.Text
+    }
+);
+Notify("Review Saved", NotificationType.Success)
+ 
+Admin Scheduling
+Create Booking Button:
+If(
+    IsBlank(DropdownEmployee.Selected) ||
+    IsBlank(DateValue7.SelectedDate) ||
+    IsBlank(HourValue7.Selected.Value) ||
+    IsBlank(MinuteValue7.Selected.Value) ||
+    IsBlank(DateValue6.SelectedDate) ||
+    IsBlank(HourValue6.Selected.Value) ||
+    IsBlank(MinuteValue6.Selected.Value) ||
+    IsBlank(DataCardValue20.Text) ||  // Description
+    Notify("All fields are required.", NotificationType.Error),
+    If(
+        DateTimeValue(
+            Text(DateValue6.SelectedDate, "[$-en-US]yyyy-mm-dd") & " " &
+            Text(Value(HourValue6.Selected.Value), "00") & ":" &
+            Text(Value(MinuteValue6.Selected.Value), "00")
+        ) <= DateTimeValue(
+            Text(DateValue7.SelectedDate, "[$-en-US]yyyy-mm-dd") & " " &
+            Text(Value(HourValue7.Selected.Value), "00") & ":" &
+            Text(Value(MinuteValue7.Selected.Value), "00")
+        ),
+        Notify("End time must be after start time.", NotificationType.Error),
+        SubmitForm(Form2);
+        Notify("Booking created successfully!", NotificationType.Success);
+        ResetForm(Form2)
+    )
+)
+ 
+ 
+Gallery
+Navigate(EditBookingScreen, ScreenTransition.None);
+ 
+ 
+Edit Booking Screen
+Save
+SubmitForm(Form3);
+Notify("Booking updated successfully!", NotificationType.Success);
+Navigate(AdminScheduling, ScreenTransition.None);
+ 
+Delete
+Remove(Bookings, Gallery3.Selected);
+Notify("Booking deleted successfully!", NotificationType.Success);
+Navigate(AdminScheduling, ScreenTransition.None);
+ 
+ 
+User Schedule Screen
+Gallery
+Filter(Bookings, EmployeeNumber = gblEmployeeNumber)
+ 
+ 
+ 
