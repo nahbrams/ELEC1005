@@ -1,45 +1,110 @@
-Code for ontime login page
+Home
 
-Register Button:
-Navigate(LoginScreen, ScreenTransition.Fade)
-
+Enter Button:
+Navigate(Login)
+ 
+Login
 Login Button:
 If(
     !IsBlank(
         LookUp(
-            admin_list,
-            user_name = username_input.Text && passwords = password_input.Text
+            AdminList,
+            Username = username_input.Text && Password = password_input.Text
         )
     ),
-    Navigate('admin-page');
-    Notify(
-        "Login Success",
-        NotificationType.Success
-    ),
-    Set(
-        gblUsername,
-        username_input.Text
-    ),
+    Set(gblUsername, username_input.Text);
+    Navigate(AdminPage);
+    Notify("Login Success", NotificationType.Success),
     If(
         !IsBlank(
             LookUp(
-                'user-list',
+                UserList,
                 Username = username_input.Text && Password = password_input.Text
             )
         ),
-        UpdateContext({loginStatus: "success"});
-        Navigate('user-page');
-        Notify(
-            "Login Success",
-            NotificationType.Success
-        ),
-        Notify(
-            "Login Fail",
-            NotificationType.Error
+       Set(gblUsername, username_input.Text);
+        Set(gblEmployeeNumber, LookUp(UserList, Username = username_input.Text).EmployeeNumber);
+        Navigate(UserPage);
+        Notify("Login Success", NotificationType.Success),
+        Notify("Login Fail", NotificationType.Error)
+    )
+)
+ 
+Forgot Password Button:
+Navigate(ForgotPasswordScreen)
+
+Register Button:
+Navigate(RegisterScreen)
+
+Register Screen
+Register Button:
+If(
+    IsBlank(txtName.Text) || IsBlank(txtUsername.Text) || IsBlank(txtPassword.Text) || IsBlank(txtEmail.Text) || IsBlank(txtEmployeeNumber.Text),
+    Notify("All fields are required.", NotificationType.Error),
+    If(
+        !IsBlank(LookUp(UserList, Username = txtUsername.Text)),
+        Notify("Username already exists.", NotificationType.Error),
+        If(
+            Len(txtPassword.Text) < 8,
+            Notify("Password too weak. Must be at least 8 characters long.", NotificationType.Error),
+            Patch(
+                UserList,
+                Defaults(UserList),
+                {
+                    Title: txtName.Text,
+                    Username: txtUsername.Text,
+                    Password: txtPassword.Text,
+                    Email: txtEmail.Text,
+                    EmployeeNumber: txtEmployeeNumber.Text
+                }
+            );
+            Notify("Registration successful!", NotificationType.Success);
+            Reset(txtName);
+            Reset(txtUsername);
+            Reset(txtPassword);
+            Reset(txtEmail);
+            Reset(txtEmployeeNumber);
+            Navigate(Login)
         )
     )
 )
  
+
+Back Register Button
+Back()
  
-Register Button:
-Navigate(register, ScreenTransition.Fade)
+ 
+Forgot Password Screen
+reset_pwd_button
+If(
+    IsBlank(txtEmail2.Text) || IsBlank(txtNewPassword2.Text) || IsBlank(txtConfirmPassword2.Text),
+    Notify("All fields are required.", NotificationType.Error),
+    If(
+        IsBlank(LookUp(UserList, Email = txtEmail2.Text)),
+        Notify("Email not found.", NotificationType.Error),
+        If(
+            Len(txtNewPassword2.Text) < 8,
+            Notify("Password too weak. Must be at least 8 characters long.", NotificationType.Error),
+            If(
+                txtNewPassword2.Text <> txtConfirmPassword2.Text,
+                Notify("Passwords do not match.", NotificationType.Error),
+                Patch(
+                    UserList,
+                    LookUp(UserList, Email = txtEmail2.Text),
+                    {
+                        Password: txtNewPassword2.Text
+                    }
+                );
+                Notify("Password reset successful!", NotificationType.Success);
+                Reset(txtEmail2);
+                Reset(txtNewPassword2);
+                Reset(txtConfirmPassword2);
+                Navigate(Login)
+            )
+        )
+    )
+)
+ 
+
+Back Button:
+Back()
